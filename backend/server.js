@@ -93,7 +93,7 @@ app.post('/api/login', async (req, res) => {
         );
 
         res.cookie('token', token, {
-            httpOnly: true,
+            httpOnly: false, // Changed so token can be accessed via document.cookie by JS
             secure: false, // assuming local dev without https
             maxAge: 3600000,
             sameSite: 'lax'
