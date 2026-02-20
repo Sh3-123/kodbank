@@ -85,46 +85,35 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-background text-white flex w-full">
             {/* Sidebar */}
-            <aside className="w-20 md:w-24 bg-sidebar flex flex-col items-center py-8 border-r border-[#2e3039]">
-                <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center mb-10 shadow-[0_0_15px_rgba(81,210,131,0.4)]">
-                    <LayoutDashboard size={24} className="text-black" />
+            <aside className="w-16 md:w-24 shrink-0 bg-sidebar flex flex-col items-center py-6 md:py-8 border-r border-[#2e3039]">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-accent rounded-xl flex items-center justify-center mb-8 md:mb-10 shadow-[0_0_15px_rgba(81,210,131,0.4)]">
+                    <LayoutDashboard className="text-black w-5 h-5 md:w-6 md:h-6" />
                 </div>
-                <div className="flex-1 flex flex-col gap-8 text-textMuted">
-                    <button className="p-3 bg-accent/10 text-accent rounded-xl border-l-4 border-accent relative right-[-2px]"><Home size={22} /></button>
-                    <button className="p-3 hover:text-white transition-colors"><BarChart2 size={22} /></button>
-                    <button className="p-3 hover:text-white transition-colors"><Folder size={22} /></button>
-                    <button className="p-3 hover:text-white transition-colors"><ArrowRightLeft size={22} /></button>
+                <div className="flex-1 flex flex-col gap-6 md:gap-8 text-textMuted">
+                    <button className="p-2 md:p-3 bg-accent/10 text-accent rounded-xl border-l-4 border-accent relative right-[-2px]">
+                        <Home className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
                 </div>
-                <button onClick={handleLogout} className="p-3 text-textMuted hover:text-red-400 transition-colors mt-auto" title="Logout">
-                    <LogOut size={22} />
-                </button>
             </aside>
 
             {/* Main Content */}
             <main className="flex-1 p-6 md:p-10 flex flex-col max-h-screen overflow-y-auto">
 
                 {/* Header */}
-                <header className="flex justify-between items-center mb-8">
-                    <div className="relative w-72">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-textMuted" size={18} />
+                <header className="flex justify-between items-center mb-6 md:mb-8 gap-4">
+                    <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-textMuted w-4 h-4 md:w-5 md:h-5" />
                         <input
                             type="text"
-                            placeholder="Search for something..."
-                            className="w-full bg-inputBg rounded-full py-3 pr-4 pl-12 focus:outline-none focus:ring-1 focus:ring-accent text-sm text-gray-300 border border-transparent placeholder:text-textMuted"
+                            placeholder="Search..."
+                            className="w-full bg-inputBg rounded-full py-2.5 md:py-3 pr-4 pl-10 md:pl-12 focus:outline-none focus:ring-1 focus:ring-accent text-sm text-gray-300 border border-transparent placeholder:text-textMuted transition-all"
                         />
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button className="w-10 h-10 rounded-full bg-inputBg flex items-center justify-center text-accent relative">
-                            <Bell size={18} />
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                    <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                        <button onClick={handleLogout} className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-inputBg hover:bg-red-500/10 border border-transparent hover:border-red-500/30 flex items-center justify-center text-textMuted hover:text-red-400 transition-all shadow-sm" title="Logout">
+                            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
                         </button>
-                        <button className="w-10 h-10 rounded-full bg-inputBg flex items-center justify-center text-accent">
-                            <Folder size={18} />
-                        </button>
-                        <button className="w-10 h-10 rounded-full bg-inputBg flex items-center justify-center text-accent">
-                            <ArrowRightLeft size={18} />
-                        </button>
-                        <div className="w-10 h-10 rounded-full bg-accent/20 border border-accent/40 overflow-hidden ml-2 flex items-center justify-center">
+                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-accent/20 border border-accent/40 overflow-hidden flex items-center justify-center shrink-0">
                             {/* Profile placeholder */}
                             <img src="https://i.pravatar.cc/100?img=33" alt="Profile" className="w-full h-full object-cover" />
                         </div>
