@@ -17,10 +17,13 @@ const baseExpensesData = [
     { name: 'Misc', baseValue: 347.60, color: '#24252b' },
 ];
 
+const today = new Date();
+const formatDate = (date) => `${date.getDate()} ${date.toLocaleString('en-US', { month: 'long' })} ${date.getFullYear()}`;
+
 const transactions = [
-    { id: '#01F99E22A7097', date: '2 June 2022', time: '3:45PM', title: 'Pension Payment', sub: 'Resetia Funds', amount: 3200.00, in: true },
-    { id: '#11F99E22A7X53', date: '2 June 2022', time: '2:45PM', title: 'CBA AUD 2 Franked 50%', sub: 'Resetia Funds', amount: 1000.00, in: false },
-    { id: '#01F99E22A8097', date: '2 June 2022', time: '1:45PM', title: 'Developer Salary', sub: 'Resetia Funds', amount: 5000.00, in: true },
+    { id: '#01F99E22A7097', date: formatDate(today), time: '3:45PM', title: 'Pension Payment', sub: 'Resetia Funds', amount: 3200.00, in: true },
+    { id: '#11F99E22A7X53', date: formatDate(new Date(today.getTime() - 86400000)), time: '2:45PM', title: 'CBA AUD 2 Franked 50%', sub: 'Resetia Funds', amount: 1000.00, in: false },
+    { id: '#01F99E22A8097', date: formatDate(new Date(today.getTime() - 172800000)), time: '1:45PM', title: 'Developer Salary', sub: 'Resetia Funds', amount: 5000.00, in: true },
 ];
 
 export default function Dashboard() {
