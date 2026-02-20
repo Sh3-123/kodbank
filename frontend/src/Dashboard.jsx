@@ -10,23 +10,12 @@ import confetti from 'canvas-confetti';
 
 axios.defaults.withCredentials = true;
 
-const financeData = [
-    { name: '01', value: 2400 },
-    { name: '02', value: 1398 },
-    { name: '03', value: 4200 },
-    { name: '04', value: 3000 },
-    { name: '05', value: 4800 },
-    { name: '06', value: 3800 },
-    { name: '07', value: 4231 },
+const baseExpensesData = [
+    { name: 'Shopping', baseValue: 1390.40, color: '#51d283' },
+    { name: 'Entertainment', baseValue: 1042.80, color: '#3fb26d' },
+    { name: 'Food', baseValue: 695.20, color: '#8b8e98' },
+    { name: 'Misc', baseValue: 347.60, color: '#24252b' },
 ];
-
-const expensesData = [
-    { name: 'Shopping', value: 40 },
-    { name: 'Entertainment', value: 30 },
-    { name: 'Food', value: 20 },
-    { name: 'Miscellaneous', value: 10 },
-];
-const COLORS = ['#51d283', '#3fb26d', '#8b8e98', '#24252b'];
 
 const transactions = [
     { id: '#01F99E22A7097', date: '2 June 2022', time: '3:45PM', title: 'Pension Payment', sub: 'Resetia Funds', amount: 3200.00, in: true },
@@ -38,7 +27,40 @@ export default function Dashboard() {
     const [balance, setBalance] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showBalance, setShowBalance] = useState(false);
+    const [expensesTimeframe, setExpensesTimeframe] = useState('Last 7 Days');
+    const [financesTimeframe, setFinancesTimeframe] = useState('Last 7 Days');
+    const [txTimeframe, setTxTimeframe] = useState('Last 7 Days');
+    const [disabledCategories, setDisabledCategories] = useState({});
     const navigate = useNavigate();
+
+    const cycleFrame = (current, setter) => {
+        const frames = ['Last 7 Days', 'Last 30 Days', 'This Year'];
+        setter(frames[(frames.indexOf(current) + 1) % frames.length]);
+    };
+
+    // Process Expenses
+    const activeExpenses = baseExpensesData
+        .filter(c => !disabledCategories[c.name])
+        .map(c => ({
+            ...c,
+            value: c.baseValue * (expensesTimeframe === 'Last 30 Days' ? 4.2 : expensesTimeframe === 'This Year' ? 52.1 : 1)
+        }));
+    if (activeExpenses.length === 0) activeExpenses.push({ name: 'Empty', value: 1, color: 'transparent' });
+    const totalExpenses = activeExpenses[0].name === 'Empty' ? 0 : activeExpenses.reduce((sum, c) => sum + c.value, 0);
+
+    // Process Finances
+    const getFinances = () => {
+        if (financesTimeframe === 'Last 30 Days') return [{ name: 'W1', value: 9600 }, { name: 'W2', value: 12800 }, { name: 'W3', value: 16800 }, { name: 'W4', value: 15200 }];
+        if (financesTimeframe === 'This Year') return [{ name: 'Q1', value: 49600 }, { name: 'Q2', value: 45592 }, { name: 'Q3', value: 56800 }, { name: 'Q4', value: 56924 }];
+        return [{ name: '01', value: 2400 }, { name: '02', value: 1398 }, { name: '03', value: 4200 }, { name: '04', value: 3000 }, { name: '05', value: 4800 }, { name: '06', value: 3800 }, { name: '07', value: 4231 }];
+    };
+    const currentFinances = getFinances();
+    const currentFinanceTotal = currentFinances[currentFinances.length - 1].value;
+
+    // Process Transactions
+    const currentTransactions = txTimeframe === 'Last 7 Days' ? transactions :
+        txTimeframe === 'Last 30 Days' ? [...transactions, ...transactions].map((t, i) => ({ ...t, id: t.id.slice(0, -1) + i })) :
+            [...transactions, ...transactions, ...transactions].map((t, i) => ({ ...t, id: t.id.slice(0, -1) + i }));
 
     useEffect(() => {
         handleCheckBalance();
@@ -132,14 +154,14 @@ export default function Dashboard() {
                             <div className="bg-card rounded-2xl p-6 relative flex flex-col justify-between border border-[#2e3039]">
                                 <div className="flex justify-between items-center z-10">
                                     <h3 className="font-semibold text-gray-200">My Expenses</h3>
-                                    <span className="text-xs text-textMuted bg-inputBg py-1 px-3 rounded-md">Last 7 Days ▾</span>
+                                    <button onClick={() => cycleFrame(expensesTimeframe, setExpensesTimeframe)} className="text-xs text-textMuted bg-inputBg hover:bg-white/10 hover:text-white transition-colors py-1 px-3 rounded-md cursor-pointer">{expensesTimeframe} ▾</button>
                                 </div>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
                                     <div className="w-full h-32 ml-4">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
-                                                    data={expensesData}
+                                                    data={activeExpenses}
                                                     cx="50%"
                                                     cy="100%"
                                                     startAngle={180}
@@ -151,23 +173,28 @@ export default function Dashboard() {
                                                     stroke="none"
                                                     cornerRadius={4}
                                                 >
-                                                    {expensesData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    {activeExpenses.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
                                                     ))}
                                                 </Pie>
                                             </PieChart>
                                         </ResponsiveContainer>
                                     </div>
                                     <div className="absolute top-[60%] text-center">
-                                        <p className="text-3xl font-bold">₹{formatCurr(3476)}</p>
-                                        <p className="text-xs text-textMuted mt-1">Spendings This Week</p>
+                                        <p className="text-3xl font-bold">₹{formatCurr(totalExpenses)}</p>
+                                        <p className="text-xs text-textMuted mt-1">Spendings {expensesTimeframe}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 justify-center text-[10px] text-textMuted z-10 mt-auto">
-                                    <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-accent"></div> Shopping</span>
-                                    <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-accentDark"></div> Entertainment</span>
-                                    <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-textMuted"></div> Food</span>
-                                    <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-[#24252b] border border-gray-600"></div> Misc</span>
+                                    {baseExpensesData.map(c => (
+                                        <button
+                                            key={c.name}
+                                            onClick={() => setDisabledCategories({ ...disabledCategories, [c.name]: !disabledCategories[c.name] })}
+                                            className={`flex items-center gap-1 hover:text-white cursor-pointer transition-all ${disabledCategories[c.name] ? 'opacity-30' : 'opacity-100'}`}
+                                        >
+                                            <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: c.color }}></div> {c.name}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
@@ -175,18 +202,18 @@ export default function Dashboard() {
                             <div className="bg-card rounded-2xl p-6 relative flex flex-col border border-[#2e3039]">
                                 <div className="flex justify-between items-center mb-2 z-10">
                                     <h3 className="font-semibold text-gray-200">My Finances</h3>
-                                    <span className="text-xs text-textMuted bg-inputBg py-1 px-3 rounded-md">Last 7 Days ▾</span>
+                                    <button onClick={() => cycleFrame(financesTimeframe, setFinancesTimeframe)} className="text-xs text-textMuted bg-inputBg hover:bg-white/10 hover:text-white transition-colors py-1 px-3 rounded-md cursor-pointer">{financesTimeframe} ▾</button>
                                 </div>
                                 <div className="absolute top-16 right-10 z-10">
-                                    <p className="font-bold text-xl">₹{formatCurr(4231)}</p>
+                                    <p className="font-bold text-xl">₹{formatCurr(currentFinanceTotal)}</p>
                                 </div>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={financeData} margin={{ top: 40, right: 10, left: -20, bottom: 0 }}>
+                                    <LineChart data={currentFinances} margin={{ top: 40, right: 10, left: -20, bottom: 0 }}>
                                         <Line type="monotone" dataKey="value" stroke="#51d283" strokeWidth={3} dot={{ r: 0 }} activeDot={{ r: 6, fill: "#fff", stroke: "#51d283", strokeWidth: 3 }} />
                                     </LineChart>
                                 </ResponsiveContainer>
                                 <div className="flex justify-between text-[10px] text-textMuted mt-4 px-2">
-                                    <span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span>
+                                    {currentFinances.map(d => <span key={d.name}>{d.name}</span>)}
                                 </div>
                             </div>
                         </div>
@@ -197,7 +224,7 @@ export default function Dashboard() {
                                 <h3 className="font-semibold text-gray-200">My Transactions</h3>
                                 <div className="flex gap-2 items-center">
                                     <span className="text-xs text-textMuted">Transaction Overview</span>
-                                    <span className="text-xs text-textMuted bg-inputBg py-1 px-3 rounded-md">Last 7 Days ▾</span>
+                                    <button onClick={() => cycleFrame(txTimeframe, setTxTimeframe)} className="text-xs text-textMuted bg-inputBg hover:bg-white/10 hover:text-white transition-colors py-1 px-3 rounded-md cursor-pointer">{txTimeframe} ▾</button>
                                 </div>
                             </div>
 
@@ -209,8 +236,8 @@ export default function Dashboard() {
                                 <div></div>
                             </div>
 
-                            <div className="space-y-4">
-                                {transactions.map((tx, i) => (
+                            <div className="space-y-4 max-h-[220px] overflow-y-auto pr-2">
+                                {currentTransactions.map((tx, i) => (
                                     <div key={i} className="flex items-center text-sm grid grid-cols-[1fr_2fr_1.5fr_1fr_auto] gap-4 px-2 py-2 hover:bg-white/5 rounded-xl transition-colors">
                                         <div className="text-textMuted text-xs">
                                             <p className="text-gray-300">{tx.date}</p>
