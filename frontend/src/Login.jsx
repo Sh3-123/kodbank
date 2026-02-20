@@ -1,9 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, Check } from 'lucide-react';
 
 axios.defaults.withCredentials = true;
+
+const Typewriter = ({ text }) => {
+    const [currentText, setCurrentText] = useState('');
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (currentIndex < text.length) {
+            const timeout = setTimeout(() => {
+                setCurrentText(prev => prev + text[currentIndex]);
+                setCurrentIndex(prev => prev + 1);
+            }, 120);
+            return () => clearTimeout(timeout);
+        }
+    }, [currentIndex, text]);
+
+    return (
+        <span className="inline-flex items-center text-white">
+            {currentText}
+            <span className="w-[4px] h-[40px] lg:h-[60px] bg-accent ml-2 animate-[pulse_1s_ease-in-out_infinite]"></span>
+        </span>
+    );
+};
 
 export default function Login() {
     const [form, setForm] = useState({ username: '', password: '' });
@@ -41,8 +63,8 @@ export default function Login() {
                 <div className="absolute w-48 h-8 bg-gradient-to-r from-accent/0 to-accent/20 rounded-full rotate-45 bottom-[60%] left-[-5%] blur-[2px]"></div>
 
                 <div className="relative z-10 w-full max-w-xl">
-                    <h1 className="text-5xl lg:text-7xl font-bold mb-6 tracking-tight text-white drop-shadow-md">
-                        Kodbank
+                    <h1 className="text-5xl lg:text-7xl font-bold mb-6 tracking-tight">
+                        <Typewriter text="Kodbank" />
                     </h1>
                     <p className="text-xl text-gray-300 leading-relaxed font-light mt-4">
                         The banking app trusted by thousands of users.
