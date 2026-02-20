@@ -79,8 +79,8 @@ export default function Dashboard() {
         setShowBalance(!showBalance);
     };
 
-    // A helper to format numbers elegantly
-    const formatCurr = (num) => num ? Number(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "******";
+    // A helper to format numbers elegantly for Indian Rupees (lakhs/crores)
+    const formatCurr = (num) => num ? Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "******";
 
     return (
         <div className="min-h-screen bg-background text-white flex w-full">
@@ -170,7 +170,7 @@ export default function Dashboard() {
                                         </ResponsiveContainer>
                                     </div>
                                     <div className="absolute top-[60%] text-center">
-                                        <p className="text-3xl font-bold">${formatCurr(3476)}</p>
+                                        <p className="text-3xl font-bold">₹{formatCurr(3476)}</p>
                                         <p className="text-xs text-textMuted mt-1">Spendings This Week</p>
                                     </div>
                                 </div>
@@ -189,7 +189,7 @@ export default function Dashboard() {
                                     <span className="text-xs text-textMuted bg-inputBg py-1 px-3 rounded-md">Last 7 Days ▾</span>
                                 </div>
                                 <div className="absolute top-16 right-10 z-10">
-                                    <p className="font-bold text-xl">${formatCurr(4231)}</p>
+                                    <p className="font-bold text-xl">₹{formatCurr(4231)}</p>
                                 </div>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={financeData} margin={{ top: 40, right: 10, left: -20, bottom: 0 }}>
@@ -240,7 +240,7 @@ export default function Dashboard() {
                                         </div>
                                         <div className="text-textMuted font-mono text-xs flex items-center">{tx.id}</div>
                                         <div className={`text-right pr-4 flex items-center justify-end font-medium ${tx.in ? 'text-accent' : 'text-red-400'}`}>
-                                            {tx.in ? '+' : '-'}${formatCurr(tx.amount)} {tx.in ? <ArrowRightLeft size={12} className="ml-1 opacity-50 rotate-90" /> : <ArrowRightLeft size={12} className="ml-1 opacity-50 -rotate-90" />}
+                                            {tx.in ? '+' : '-'}₹{formatCurr(tx.amount)} {tx.in ? <ArrowRightLeft size={12} className="ml-1 opacity-50 rotate-90" /> : <ArrowRightLeft size={12} className="ml-1 opacity-50 -rotate-90" />}
                                         </div>
                                         <div className="flex items-center text-textMuted hover:text-white cursor-pointer"><MoreVertical size={16} /></div>
                                     </div>
@@ -293,7 +293,7 @@ export default function Dashboard() {
                                 <p className="text-textMuted text-xs mb-1">Balance</p>
                                 <div className="flex items-center gap-3">
                                     <p className="text-3xl font-bold text-white">
-                                        ${showBalance && balance !== null ? formatCurr(balance) : '******'}
+                                        ₹{showBalance && balance !== null ? formatCurr(balance) : '******'}
                                     </p>
                                     <button
                                         onClick={toggleBalance}
@@ -305,7 +305,7 @@ export default function Dashboard() {
                             </div>
                             <div className="text-right">
                                 <p className="text-textMuted text-xs mb-1">Gains/Losses</p>
-                                <p className="text-sm text-red-400">-$34.50</p>
+                                <p className="text-sm text-red-400">-₹34.50</p>
                             </div>
                         </div>
 

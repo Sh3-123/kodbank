@@ -40,7 +40,7 @@ app.post('/api/register', async (req, res) => {
         }
 
         const hashed = await bcrypt.hash(password, 10);
-        const balance = 100000.00;
+        const balance = 100000; // 1 Lakh Rupees
         const role = 'customer';
 
         const [result] = await pool.query(
