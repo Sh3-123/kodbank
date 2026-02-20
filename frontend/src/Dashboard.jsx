@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
-    Home, BarChart2, Folder, ArrowRightLeft, Settings,
-    Search, Bell, LayoutDashboard, MoreVertical, CreditCard, Plus
+    Home, BarChart2, Folder, ArrowRightLeft,
+    Search, Bell, LayoutDashboard, MoreVertical, CreditCard, Plus, LogOut
 } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import confetti from 'canvas-confetti';
@@ -95,8 +95,8 @@ export default function Dashboard() {
                     <button className="p-3 hover:text-white transition-colors"><Folder size={22} /></button>
                     <button className="p-3 hover:text-white transition-colors"><ArrowRightLeft size={22} /></button>
                 </div>
-                <button onClick={handleLogout} className="p-3 text-textMuted hover:text-red-400 transition-colors mt-auto">
-                    <Settings size={22} />
+                <button onClick={handleLogout} className="p-3 text-textMuted hover:text-red-400 transition-colors mt-auto" title="Logout">
+                    <LogOut size={22} />
                 </button>
             </aside>
 
