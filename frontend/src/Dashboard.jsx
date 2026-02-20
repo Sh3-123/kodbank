@@ -6,6 +6,7 @@ import {
     Search, Bell, LayoutDashboard, MoreVertical, CreditCard, Plus
 } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import confetti from 'canvas-confetti';
 
 axios.defaults.withCredentials = true;
 
@@ -36,6 +37,7 @@ const transactions = [
 export default function Dashboard() {
     const [balance, setBalance] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showBalance, setShowBalance] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -65,6 +67,17 @@ export default function Dashboard() {
             console.error('Logout failed');
         }
     }
+
+    const toggleBalance = () => {
+        if (!showBalance && balance !== null) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+        setShowBalance(!showBalance);
+    };
 
     // A helper to format numbers elegantly
     const formatCurr = (num) => num ? Number(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "******";
@@ -278,7 +291,17 @@ export default function Dashboard() {
                         <div className="flex justify-between items-end mb-8 border-b border-[#2e3039] pb-6">
                             <div>
                                 <p className="text-textMuted text-xs mb-1">Balance</p>
-                                <p className="text-3xl font-bold text-white">${balance !== null ? formatCurr(balance) : '******'}</p>
+                                <div className="flex items-center gap-3">
+                                    <p className="text-3xl font-bold text-white">
+                                        ${showBalance && balance !== null ? formatCurr(balance) : '******'}
+                                    </p>
+                                    <button
+                                        onClick={toggleBalance}
+                                        className="text-xs text-accent hover:text-accentDark bg-accent/10 hover:bg-accent/20 px-3 py-1 rounded-md transition-colors font-medium border border-accent/20"
+                                    >
+                                        {showBalance ? 'Hide' : 'Reveal'}
+                                    </button>
+                                </div>
                             </div>
                             <div className="text-right">
                                 <p className="text-textMuted text-xs mb-1">Gains/Losses</p>

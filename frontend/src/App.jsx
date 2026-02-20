@@ -6,7 +6,7 @@ import Dashboard from './Dashboard';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-900 flex justify-center items-center text-gray-100 font-sans">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-white font-sans w-full">
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/register" element={<Register />} />
