@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import confetti from 'canvas-confetti';
+import Chatbot from './Chatbot';
 
 axios.defaults.withCredentials = true;
 
@@ -375,6 +376,9 @@ export default function Dashboard() {
                     </div>
                 </div>
             </main>
+
+            {/* AI Chatbot Widget */}
+            <Chatbot />
         </div>
     );
 }
