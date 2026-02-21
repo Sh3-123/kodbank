@@ -137,7 +137,7 @@ app.post('/api/chat', authenticate, async (req, res) => {
         }
         prompt += `<|user|>\n${input}</s>\n<|assistant|>\n`;
 
-        const response = await fetch('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta', {
+        const response = await fetch('https://router.huggingface.co/hf-inference/models/HuggingFaceH4/zephyr-7b-beta', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${process.env.HF_API_KEY || process.env.VITE_HF_API_KEY}`,
