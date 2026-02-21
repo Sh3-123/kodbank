@@ -124,6 +124,49 @@ app.get('/api/getBalance', authenticate, async (req, res) => {
     }
 });
 
+app.post('/api/chat', authenticate, async (req, res) => {
+    try {
+        const { messages, input } = req.body;
+
+        // Build prompt for Zephyr-7B
+        let prompt = `<|system|>\nYou are a helpful and concise AI assistant for Kodbank, a modern online banking platform. You answer financial questions clearly and helpfully.</s>\n`;
+        if (messages && Array.isArray(messages)) {
+            messages.forEach(m => {
+                prompt += `<|${m.role === 'bot' ? 'assistant' : 'user'}|>\n${m.content}</s>\n`;
+            });
+        }
+        prompt += `<|user|>\n${input}</s>\n<|assistant|>\n`;
+
+        const response = await fetch('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.HF_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                inputs: prompt,
+                parameters: {
+                    max_new_tokens: 150,
+                    temperature: 0.7,
+                    return_full_text: false,
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            res.json(data);
+        } else {
+            res.status(response.status).json(data);
+        }
+
+    } catch (err) {
+        console.error('Chat API Error:', err);
+        res.status(500).json({ error: 'Failed to communicate with AI provider' });
+    }
+});
+
 // Error Handler Middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

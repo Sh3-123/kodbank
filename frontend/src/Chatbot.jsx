@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import { MessageSquare, X, Send, Bot, User, Loader2 } from 'lucide-react';
-
-const HF_API_KEY = import.meta.env.VITE_HF_API_KEY;
-// Using a fast model that is usually loaded for general instruction
-const API_URL = 'https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta';
 
 export default function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
@@ -22,78 +19,58 @@ export default function Chatbot() {
         scrollToBottom();
     }, [messages, isOpen]);
 
-    const queryHuggingFace = async (prompt, retries = 3) => {
-        for (let i = 0; i < retries; i++) {
-            const response = await fetch(API_URL, {
-                headers: {
-                    Authorization: `Bearer ${HF_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                method: 'POST',
-                body: JSON.stringify({
-                    inputs: prompt,
-                    parameters: {
-                        max_new_tokens: 150,
-                        temperature: 0.7,
-                        return_full_text: false,
-                    }
-                }),
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                return data;
-            }
-
-            if (data.error && data.error.includes('currently loading')) {
-                // Wait for the estimated time (capping at 10s per retry just in case)
-                const waitTime = Math.min((data.estimated_time || 5) * 1000, 10000);
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-            } else {
-                throw new Error(data.error || 'Failed to fetch from Hugging Face API');
-            }
-        }
-        throw new Error('Model is still loading. Please try again later.');
-    };
-
     const handleSend = async () => {
         if (!input.trim()) return;
 
         const userMsg = { role: 'user', content: input };
+        const currentMessages = [...messages];
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsLoading(true);
 
         try {
-            // Build prompt for Zephyr-7B (ChatML-style or its default system prompt format)
-            let prompt = `<|system|>\nYou are a helpful and concise AI assistant for Kodbank, a modern online banking platform. You answer financial questions clearly and helpfully.</s>\n`;
-            messages.forEach(m => {
-                prompt += `<|${m.role === 'bot' ? 'assistant' : 'user'} बालक|>\n${m.content}</s>\n`;
-            });
-            // Removing the extra " बालक" I mistyped above
-            prompt = `<|system|>\nYou are a helpful and concise AI assistant for Kodbank, a modern online banking platform. You answer financial questions clearly and helpfully.</s>\n`;
-            messages.forEach(m => {
-                prompt += `<|${m.role === 'bot' ? 'assistant' : 'user'}|>\n${m.content}</s>\n`;
-            });
-            prompt += `<|user|>\n${input}</s>\n<|assistant|>\n`;
-
-            const result = await queryHuggingFace(prompt);
-
+            // Using a retry loop similar to before for the HuggingFace "loading" status,
+            // handled via the proxy if HF says "currently loading"
             let botContent = 'Sorry, I couldn\'t generate a response.';
-            if (Array.isArray(result) && result.length > 0 && result[0].generated_text) {
-                botContent = result[0].generated_text;
-            } else if (typeof result === 'string') {
-                botContent = result;
-            } else if (result.generated_text) {
-                botContent = result.generated_text;
+            const maxRetries = 3;
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await axios.post('/api/chat', {
+                        messages: currentMessages,
+                        input: userMsg.content
+                    }, { withCredentials: true });
+
+                    const result = response.data;
+
+                    if (Array.isArray(result) && result.length > 0 && result[0].generated_text) {
+                        botContent = result[0].generated_text;
+                        break;
+                    } else if (typeof result === 'string') {
+                        botContent = result;
+                        break;
+                    } else if (result.generated_text) {
+                        botContent = result.generated_text;
+                        break;
+                    }
+                } catch (error) {
+                    // Check if error is related to HF model loading
+                    if (error.response?.data?.error && error.response.data.error.includes('currently loading')) {
+                        const waitTime = Math.min((error.response.data.estimated_time || 5) * 1000, 10000);
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        continue;
+                    }
+                    throw error;
+                }
             }
 
             setMessages(prev => [...prev, { role: 'bot', content: botContent.trim() }]);
         } catch (error) {
             console.error(error);
+            const errorMessage = error.response?.data?.error || error.message || 'I encountered an issue connecting to the AI model.';
             setMessages(prev => [...prev, {
                 role: 'bot',
-                content: `Error: ${error.message || 'I encountered an issue connecting to the AI model.'}`
+                content: `Error: ${errorMessage}`
             }]);
         } finally {
             setIsLoading(false);
