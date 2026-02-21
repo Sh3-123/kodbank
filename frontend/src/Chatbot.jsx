@@ -43,7 +43,10 @@ export default function Chatbot() {
 
                     const result = response.data;
 
-                    if (Array.isArray(result) && result.length > 0 && result[0].generated_text) {
+                    if (result.choices && result.choices.length > 0 && result.choices[0].message) {
+                        botContent = result.choices[0].message.content;
+                        break;
+                    } else if (Array.isArray(result) && result.length > 0 && result[0].generated_text) {
                         botContent = result[0].generated_text;
                         break;
                     } else if (typeof result === 'string') {

@@ -128,28 +128,31 @@ app.post('/api/chat', authenticate, async (req, res) => {
     try {
         const { messages, input } = req.body;
 
-        // Build prompt for Zephyr-7B
-        let prompt = `<|system|>\nYou are a helpful and concise AI assistant for Kodbank, a modern online banking platform. You answer financial questions clearly and helpfully.</s>\n`;
+        const formattedMessages = [
+            { role: 'system', content: 'You are a helpful and concise AI assistant for Kodbank, a modern online banking platform. You answer financial questions clearly and helpfully.' }
+        ];
+
         if (messages && Array.isArray(messages)) {
             messages.forEach(m => {
-                prompt += `<|${m.role === 'bot' ? 'assistant' : 'user'}|>\n${m.content}</s>\n`;
+                formattedMessages.push({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.content });
             });
         }
-        prompt += `<|user|>\n${input}</s>\n<|assistant|>\n`;
 
-        const response = await fetch('https://router.huggingface.co/hf-inference/models/HuggingFaceH4/zephyr-7b-beta', {
+        if (input) {
+            formattedMessages.push({ role: 'user', content: input });
+        }
+
+        const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${process.env.HF_API_KEY || process.env.VITE_HF_API_KEY}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                inputs: prompt,
-                parameters: {
-                    max_new_tokens: 150,
-                    temperature: 0.7,
-                    return_full_text: false,
-                }
+                model: 'meta-llama/Llama-3.2-3B-Instruct',
+                messages: formattedMessages,
+                max_tokens: 150,
+                temperature: 0.7,
             })
         });
 
